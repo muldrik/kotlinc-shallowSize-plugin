@@ -20,13 +20,13 @@ plugins {
 
 dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter:$JUNIT_VERSION"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION"
 }
 
 compileKotlin {
     kotlinOptions {
         jvmTarget = "$JVM_TARGET_VERSION"
-        freeCompilerArgs += ["-Xplugin=${rootDir}/new-plugin/build/libs/new-plugin.jar",
-        "-P", "plugin:arrow.meta.plugin.compiler:generatedSrcOutputDir=${buildDir}"]
+        freeCompilerArgs += ["-Xplugin=${rootDir}/new-plugin/build/libs/new-plugin.jar"]
     }
 }
 
