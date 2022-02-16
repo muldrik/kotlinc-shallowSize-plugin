@@ -1,2 +1,4 @@
 .idea/
 .gradle/
+new-plugin/build/
+use-plugin/build/

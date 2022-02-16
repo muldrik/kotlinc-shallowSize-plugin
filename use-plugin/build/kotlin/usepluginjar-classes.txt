@@ -1,1 +1,0 @@
-/home/muldrik/Code/kotlin-projects/shallowSize-kotlinC-plugin/use-plugin/build/classes/kotlin/main/ru/spbu/muldrik/Hranilka.class:/home/muldrik/Code/kotlin-projects/shallowSize-kotlinC-plugin/use-plugin/build/classes/kotlin/main/ru/spbu/muldrik/MyClass.class
