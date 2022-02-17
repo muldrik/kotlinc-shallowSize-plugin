@@ -1,4 +1,5 @@
 .idea/
 .gradle/
-new-plugin/build/
-use-plugin/build/
+shallow-size-plugin/build
+test-plugin/build
+build/
