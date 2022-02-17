@@ -33,6 +33,7 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions {
         jvmTarget = "$JVM_TARGET_VERSION"
+        freeCompilerArgs += ["-Xplugin=${rootDir}/new-plugin/build/libs/new-plugin.jar"]
     }
 }
 

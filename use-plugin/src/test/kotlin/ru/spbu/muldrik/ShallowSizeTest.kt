@@ -12,9 +12,14 @@ val pointerSize = with(System.getProperty("sun.arch.data.model")) {
 
 open class Par() {
   var reallyChar: Char = 'a'
+  open var duplicate : Long = 10
 }
 
-data class Mda(val zoz: Int): Par()
+fun lol(): Unit {}
+
+data class Mda(val i: Int): Par() {
+  override var duplicate : Long = 20
+}
 
 class ShallowSizeTests {
   @Test
@@ -27,5 +32,6 @@ class ShallowSizeTests {
     }
     assertEquals(2*Int.SIZE_BYTES, x.shallowSize())
     assertEquals(pointerSize + Char.SIZE_BYTES, y.shallowSize())
+    println(z.shallowSize())
   }
 }

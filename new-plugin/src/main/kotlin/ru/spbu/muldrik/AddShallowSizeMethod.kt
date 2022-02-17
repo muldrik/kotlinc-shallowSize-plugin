@@ -5,36 +5,33 @@ import arrow.meta.Meta
 import arrow.meta.invoke
 import arrow.meta.quotes.Transform
 import arrow.meta.quotes.classDeclaration
-import org.jetbrains.kotlin.backend.common.ir.allParameters
-import org.jetbrains.kotlin.backend.common.ir.isStatic
-import org.jetbrains.kotlin.backend.jvm.codegen.psiElement
-import org.jetbrains.kotlin.ir.util.functions
-import org.jetbrains.kotlin.psi.KtClassBody
-import org.jetbrains.kotlin.psi.getOrCreateBody
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
-import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
-import org.jetbrains.kotlin.descriptors.Modality
-import org.jetbrains.kotlin.ir.backend.js.export.ExportedType
-import org.jetbrains.kotlin.ir.backend.js.lower.calls.getPrimitiveType
+import org.jetbrains.kotlin.backend.wasm.ir2wasm.getSuperClass
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irInt
 import org.jetbrains.kotlin.ir.builders.*
-import org.jetbrains.kotlin.ir.builders.declarations.addFunction
-import org.jetbrains.kotlin.ir.builders.declarations.addProperty
-import org.jetbrains.kotlin.ir.builders.declarations.buildClass
-import org.jetbrains.kotlin.ir.builders.declarations.buildFun
 import org.jetbrains.kotlin.ir.declarations.IrClass
-import org.jetbrains.kotlin.ir.declarations.addMember
+import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.descriptors.IrBuiltIns
 import org.jetbrains.kotlin.ir.types.*
-import org.jetbrains.kotlin.ir.util.functions
-import org.jetbrains.kotlin.ir.util.properties
+import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.name.Name
 
+
+// System call
 val pointerSize = with(System.getProperty("sun.arch.data.model")) {
     if (this == "64") return@with 8
     else return@with 4
+}
+
+fun IrClass.calculateSizeRecursively(alreadyDefined: MutableSet<Name>, builtIns: IrBuiltIns) : Int {
+    return this.properties.sumOf { it.sizeIfNotOverriden(alreadyDefined) } + (this.getSuperClass(builtIns)?.calculateSizeRecursively(alreadyDefined, builtIns) ?: 0)
+}
+
+fun IrProperty.sizeIfNotOverriden(alreadyDefined : MutableSet<Name>) : Int {
+    val backingField = this.backingField
+    if (backingField == null || alreadyDefined.contains(backingField.name)) return 0
+    else return backingField.type.size().also { alreadyDefined.add(backingField.name) }
 }
 
 // https://kotlinlang.org/docs/basic-types.html
@@ -51,7 +48,9 @@ fun IrType.size(): Int {
         isULong() -> ULong.SIZE_BYTES
         isFloat() -> Float.SIZE_BYTES
         isDouble() -> Double.SIZE_BYTES
+        // I couldn't find specification of Boolean and Unit byte size. 1 and 0 make sense
         isBoolean() -> Byte.SIZE_BYTES
+        isUnit() -> 0
         else -> pointerSize
     }
 }
@@ -74,14 +73,43 @@ val Meta.GenerateShallowSize: CliPlugin
                 )
             },
             irClass { `class`->
+                val alreadyDefined = mutableSetOf<Name>() // If the field is overriden then it shouldn't be summed in superclasses
                 if (`class`.isData) {
-                    val shallowSize = `class`.properties.sumOf { it.backingField?.type?.size() ?: 0  }
+                    val shallowSize = `class`.calculateSizeRecursively(alreadyDefined, irBuiltIns)
+                    //val shallowSize = `class`.properties.sumOf { it.sizeIfNotOverriden(alreadyAccounted) }
 
                     `class`.functions.first { it.name.toString() == "shallowSize" && it.valueParameters.isEmpty() }.also { function ->
                         function.body = DeclarationIrBuilder(pluginContext, function.symbol).irBlockBody {
                             +irReturn (irInt(shallowSize))
                         }
                     }
+                    /*
+                    Used for debuggin
+                    TODO remove before release
+
+                    val funPrintln = pluginContext.referenceFunctions(FqName("kotlin.io.println"))
+                        .single {
+                            val parameters = it.owner.valueParameters
+                            parameters.size == 1 && parameters[0].type == pluginContext.irBuiltIns.anyNType
+                        }
+                    val duplicate = "TODO"
+                    `class`.functions.first { it.name.toString() == "helper" && it.valueParameters.isEmpty() }.also { function ->
+                        function.body = DeclarationIrBuilder(pluginContext, function.symbol).irBlockBody {
+                            val callPrintln = irCall(funPrintln)
+                            var log = ""
+                            `class`.properties.forEach {
+                                val f = it.backingField
+                                if (f != null) {
+                                    log+=f.annotations.joinToString() + "\n"
+                                }
+                            }
+                            callPrintln.putValueArgument(0, irString(duplicate))
+                            +callPrintln
+
+                        }
+                    }
+
+                     */
 
                 }
                 `class`
