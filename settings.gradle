@@ -1,2 +1,2 @@
-include ':new-plugin'
-include ':use-plugin'
+include ':shallowSizePlugin'
+include ':test-plugin'

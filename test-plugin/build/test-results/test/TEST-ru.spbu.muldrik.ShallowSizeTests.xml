@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.spbu.muldrik.ShallowSizeTests" tests="6" skipped="0" failures="0" errors="0" timestamp="2022-02-17T21:18:51" hostname="ArchHome" time="0.043">
+  <properties/>
+  <testcase name="inheritance()" classname="ru.spbu.muldrik.ShallowSizeTests" time="0.021"/>
+  <testcase name="General edge cases()" classname="ru.spbu.muldrik.ShallowSizeTests" time="0.016"/>
+  <testcase name="single property in primary constructor()" classname="ru.spbu.muldrik.ShallowSizeTests" time="0.001"/>
+  <testcase name="Multiple properties in primary constructor()" classname="ru.spbu.muldrik.ShallowSizeTests" time="0.0"/>
+  <testcase name="Property has no backing field()" classname="ru.spbu.muldrik.ShallowSizeTests" time="0.0"/>
+  <testcase name="method exists()" classname="ru.spbu.muldrik.ShallowSizeTests" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
