@@ -6,7 +6,7 @@ The plugin is powered by [Arrow Meta](https://github.com/arrow-kt/arrow-meta) an
 ## Quick start
 1. Download a compiled plugin from the release tab
 
-2.1 If you use gradle, add the following code to your `build.gradle`
+2. If you use gradle, add the following code to your `build.gradle`
 ```gradle
 compileKotlin {
     kotlinOptions {
@@ -24,6 +24,8 @@ tasks.compileKotlin {
     }
 }
 ```
+kotlinc is currently not supported as the project maker was too late to realise that ArrowMeta doesn't register a compatible plugin by default
+
 3. Now your data classes have a member function `shallowSize()`
 
 For example
