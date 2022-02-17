@@ -6,36 +6,22 @@ import arrow.meta.invoke
 import arrow.meta.quotes.Transform
 import arrow.meta.quotes.classDeclaration
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
-import org.jetbrains.kotlin.backend.wasm.ir2wasm.getSuperClass
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irInt
 import org.jetbrains.kotlin.ir.builders.*
-import org.jetbrains.kotlin.ir.declarations.IrClass
-import org.jetbrains.kotlin.ir.declarations.IrProperty
-import org.jetbrains.kotlin.ir.descriptors.IrBuiltIns
 import org.jetbrains.kotlin.ir.types.*
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.name.Name
 
 
-// System call
+
 val pointerSize = with(System.getProperty("sun.arch.data.model")) {
     if (this == "64") return@with 8
     else return@with 4
 }
 
-fun IrClass.calculateSizeRecursively(alreadyDefined: MutableSet<Name>, builtIns: IrBuiltIns) : Int {
-    return this.properties.sumOf { it.sizeIfNotOverriden(alreadyDefined) } + (this.getSuperClass(builtIns)?.calculateSizeRecursively(alreadyDefined, builtIns) ?: 0)
-}
-
-fun IrProperty.sizeIfNotOverriden(alreadyDefined : MutableSet<Name>) : Int {
-    val backingField = this.backingField
-    if (backingField == null || alreadyDefined.contains(backingField.name)) return 0
-    else return backingField.type.size().also { alreadyDefined.add(backingField.name) }
-}
-
 // https://kotlinlang.org/docs/basic-types.html
-fun IrType.size(): Int {
+fun IrType.byteSize(): Int {
     return when {
         isNullable() -> pointerSize
         isChar() -> Char.SIZE_BYTES
@@ -73,10 +59,8 @@ val Meta.GenerateShallowSize: CliPlugin
                 )
             },
             irClass { `class`->
-                val alreadyDefined = mutableSetOf<Name>() // If the field is overriden then it shouldn't be summed in superclasses
                 if (`class`.isData) {
-                    val shallowSize = `class`.calculateSizeRecursively(alreadyDefined, irBuiltIns)
-                    //val shallowSize = `class`.properties.sumOf { it.sizeIfNotOverriden(alreadyAccounted) }
+                    val shallowSize = `class`.properties.sumOf { it.backingField?.type?.byteSize() ?: 0 }
 
                     `class`.functions.first { it.name.toString() == "shallowSize" && it.valueParameters.isEmpty() }.also { function ->
                         function.body = DeclarationIrBuilder(pluginContext, function.symbol).irBlockBody {
