@@ -10,7 +10,6 @@ The plugin is powered by [Arrow Meta](https://github.com/arrow-kt/arrow-meta) an
 ```gradle
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "$JVM_TARGET_VERSION"
         freeCompilerArgs += ["-Xplugin=<path to shallowSizePlugin.jar>"]
     }
 }
@@ -19,7 +18,6 @@ If you use `build.gradle.kts` instead add
 ```gradle
 tasks.compileKotlin {
     kotlinOptions {
-        jvmTarget = jvmTargetVersion
         freeCompilerArgs = freeCompilerArgs + "-Xplugin=<path to shallowSizePlugin.jar>"
     }
 }
