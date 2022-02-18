@@ -1,7 +1,7 @@
 # ShallowSize - Kotlin compiler plugin allowing to calculate data class total property size in compile time
 ![Test CI](https://github.com/muldrik/kotlinc-shallowSize-plugin/actions/workflows/gradle.yml/badge.svg)
 
-The plugin is powered by [Arrow Meta](https://github.com/arrow-kt/arrow-meta) and works for Kotlin version 1.5.0 and 1.5.10 and can
+The plugin is powered by [Arrow Meta](https://github.com/arrow-kt/arrow-meta) and works for Kotlin version 1.5.0 and 1.5.10
 
 ## Quick start
 1. Download a compiled plugin from the release tab
